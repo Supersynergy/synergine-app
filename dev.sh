@@ -106,6 +106,10 @@ case "${1:-all}" in
     echo -e "${GREEN}Starting infrastructure...${NC}"
     docker compose up -d
 
+    # Auto-initialize SurrealDB schema on first start (idempotent — skips if already done)
+    bash "$(dirname "$0")/scripts/init-surreal.sh" 2>/dev/null || \
+      echo -e "${CYAN}SurrealDB schema init skipped (not ready yet — run 'make init-surreal' manually)${NC}"
+
     echo ""
     echo -e "${GREEN}Starting app...${NC}"
     echo -e "${CYAN}  API:      http://localhost:3001${NC}"

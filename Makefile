@@ -17,6 +17,7 @@
 
 .PHONY: help dev stop status logs health monitoring dashboard build test db-shell
 .PHONY: ps ps-all infra app clean colima
+.PHONY: init-surreal seed-surreal surreal-shell
 
 # Color output
 RED := \033[0;31m
@@ -126,6 +127,25 @@ db-shell:
 		--password synergine \
 		--namespace ns \
 		--database db
+
+init-surreal:
+	@echo "$(CYAN)Initializing SurrealDB schema...$(NC)"
+	@bash ./scripts/init-surreal.sh
+	@echo "$(GREEN)Done.$(NC)"
+
+seed-surreal:
+	@echo "$(CYAN)Seeding SurrealDB with demo data...$(NC)"
+	@bash ./scripts/init-surreal.sh --seed
+	@echo "$(GREEN)Done.$(NC)"
+
+surreal-shell:
+	@echo "$(CYAN)Opening SurrealDB SQL shell...$(NC)"
+	@surreal sql \
+		--endpoint http://localhost:8000 \
+		--username $${SURREAL_USER:-root} \
+		--password $${SURREAL_PASS:-root} \
+		--namespace $${SURREAL_NS:-synergine} \
+		--database $${SURREAL_DB:-main}
 
 db-export:
 	@echo "$(CYAN)Exporting SurrealDB backup...$(NC)"
