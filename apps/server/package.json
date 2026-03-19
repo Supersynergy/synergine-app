@@ -15,7 +15,7 @@
     "@synergine-app/env": "workspace:*",
     "better-auth": "catalog:",
     "dotenv": "catalog:",
-    "hono": "^4.8.2",
+    "hono": "^4.12.0",
     "zod": "catalog:",
     "ioredis": "^5.6.1",
     "nats": "^2.28.0",

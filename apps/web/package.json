@@ -16,7 +16,7 @@
     "@synergine-app/auth": "workspace:*",
     "@synergine-app/env": "workspace:*",
     "@synergine-app/ui": "workspace:*",
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.2.0",
     "@tanstack/react-form": "^1.28.0",
     "@tanstack/react-router": "^1.141.1",
     "better-auth": "catalog:",
@@ -28,7 +28,7 @@
     "react-dom": "catalog:",
     "sonner": "catalog:",
     "zod": "catalog:",
-    "motion": "^12.0.0",
+    "motion": "^12.36.0",
     "gsap": "^3.12.0",
     "@lottiefiles/dotlottie-react": "^0.12.0"
   },
