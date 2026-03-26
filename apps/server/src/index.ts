@@ -9,6 +9,7 @@ import { checkHealth } from "@/lib/connections";
 import { agentRunsRouter } from "@/routes/agent-runs";
 import { agentsRouter } from "@/routes/agents";
 import { approvalsRouter } from "@/routes/approvals";
+import { billing } from "@/routes/billing";
 import { newsRouter } from "@/routes/news";
 import { onboarding } from "@/routes/onboarding";
 import { searchRouter } from "@/routes/search";
@@ -64,6 +65,7 @@ api.route("/agent-runs", agentRunsRouter);
 api.route("/search", searchRouter);
 api.route("/system", system);
 api.route("/onboarding", onboarding);
+api.route("/billing", billing);
 
 // --- OpenAPI docs (lightweight HTML redirect to Scalar) ---
 app.get("/api/docs", (c) =>
