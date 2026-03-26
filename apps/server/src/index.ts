@@ -6,8 +6,13 @@ import { logger } from "hono/logger";
 import { secureHeaders } from "hono/secure-headers";
 import { timing } from "hono/timing";
 import { checkHealth } from "@/lib/connections";
+import { agentRunsRouter } from "@/routes/agent-runs";
 import { agentsRouter } from "@/routes/agents";
+import { approvalsRouter } from "@/routes/approvals";
+import { newsRouter } from "@/routes/news";
+import { onboarding } from "@/routes/onboarding";
 import { searchRouter } from "@/routes/search";
+import { logActivity, system } from "@/routes/system";
 
 const app = new Hono();
 
@@ -25,6 +30,18 @@ app.use(
 	}),
 );
 
+// --- Request activity logging ---
+app.use("*", async (c, next) => {
+	const start = Date.now();
+	await next();
+	const ms = Date.now() - start;
+	if (c.req.path.startsWith("/api") && !c.req.path.includes("/system/")) {
+		logActivity("api", `${c.req.method} ${c.req.path} → ${c.res.status}`, {
+			ms,
+		});
+	}
+});
+
 // --- Auth ---
 app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 
@@ -41,7 +58,12 @@ app.get("/api/health", async (c) => {
 // --- API routes ---
 const api = app.basePath("/api");
 api.route("/agents", agentsRouter);
+api.route("/approvals", approvalsRouter);
+api.route("/news", newsRouter);
+api.route("/agent-runs", agentRunsRouter);
 api.route("/search", searchRouter);
+api.route("/system", system);
+api.route("/onboarding", onboarding);
 
 // --- OpenAPI docs (lightweight HTML redirect to Scalar) ---
 app.get("/api/docs", (c) =>
@@ -80,4 +102,11 @@ app.get("/api/openapi.json", (c) =>
 app.get("/", (c) => c.text("OK"));
 
 export type AppType = typeof app;
-export default app;
+
+// Explicit port binding — reads PORT from .env (default 3001)
+const port = env.PORT;
+logActivity("system", "Server started", { port });
+export default {
+	port,
+	fetch: app.fetch,
+};
