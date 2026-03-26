@@ -6,6 +6,12 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@synergine-app/ui/components/card";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+} from "@synergine-app/ui/components/dialog";
 import { Skeleton } from "@synergine-app/ui/components/skeleton";
 import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -54,6 +60,33 @@ type BillingStatus = {
 	portalUrl: string;
 };
 
+type PipelineStats = {
+	totalLeads: number;
+	scoredToday: number;
+	emailsSent: number;
+	replyRate: number;
+	pipelineValue: number;
+};
+
+type PipelineLead = {
+	id: string;
+	leadId: string;
+	score: number | null;
+	createdAt: string;
+};
+
+type PipelineStages = {
+	stages: Record<string, { count: number; leads: PipelineLead[] }>;
+};
+
+type ApiKeyInfo = {
+	id: string;
+	name: string;
+	maskedKey: string;
+	createdAt: string;
+	lastUsed: string | null;
+};
+
 function formatUptime(seconds: number): string {
 	const h = Math.floor(seconds / 3600);
 	const m = Math.floor((seconds % 3600) / 60);
@@ -80,6 +113,23 @@ function ServiceCard({ name, status }: { name: string; status: string }) {
 	);
 }
 
+const STAGE_LABELS: Record<string, string> = {
+	new: "New",
+	scored: "Scored",
+	enriched: "Enriched",
+	pitched: "Pitched",
+	replied: "Replied",
+};
+
+function scoreBadgeClass(score: number | null): string {
+	if (score === null) return "bg-muted text-muted-foreground";
+	if (score >= 70)
+		return "bg-emerald-500/20 text-emerald-400 border-emerald-500/30";
+	if (score >= 40)
+		return "bg-yellow-500/20 text-yellow-400 border-yellow-500/30";
+	return "bg-muted text-muted-foreground";
+}
+
 function RouteComponent() {
 	const { session } = Route.useRouteContext();
 	const [health, setHealth] = useState<Health | null>(null);
@@ -90,6 +140,30 @@ function RouteComponent() {
 		null,
 	);
 	const [billingLoading, setBillingLoading] = useState(true);
+
+	// Pipeline state
+	const [pipelineStats, setPipelineStats] = useState<PipelineStats | null>(
+		null,
+	);
+	const [pipelineStages, setPipelineStages] = useState<PipelineStages | null>(
+		null,
+	);
+	const [apiKeys, setApiKeys] = useState<ApiKeyInfo[]>([]);
+	const [rotatedKey, setRotatedKey] = useState<string | null>(null);
+
+	const fetchPipelineStats = async () => {
+		try {
+			const res = await fetch(`${API}/pipeline/stats`, {
+				credentials: "include",
+			});
+			if (res.ok) {
+				const data: PipelineStats = await res.json();
+				setPipelineStats(data);
+			}
+		} catch {
+			// silently ignore pipeline stat errors
+		}
+	};
 
 	const fetchAll = async () => {
 		try {
@@ -120,6 +194,58 @@ function RouteComponent() {
 			.catch(() => setBillingStatus(null))
 			.finally(() => setBillingLoading(false));
 	}, []);
+
+	// Load pipeline data on mount + poll stats every 30s
+	useEffect(() => {
+		const loadInitialPipeline = async () => {
+			const [stagesRes, keysRes] = await Promise.allSettled([
+				fetch(`${API}/pipeline/stages`, { credentials: "include" }).then((r) =>
+					r.ok ? r.json() : null,
+				),
+				fetch(`${API}/pipeline/api-keys`, { credentials: "include" }).then(
+					(r) => (r.ok ? r.json() : null),
+				),
+			]);
+			if (stagesRes.status === "fulfilled" && stagesRes.value) {
+				setPipelineStages(stagesRes.value);
+			}
+			if (keysRes.status === "fulfilled" && keysRes.value) {
+				setApiKeys(keysRes.value);
+			}
+		};
+
+		fetchPipelineStats();
+		loadInitialPipeline();
+
+		const statsInterval = setInterval(fetchPipelineStats, 30_000);
+		return () => clearInterval(statsInterval);
+	}, []);
+
+	const handleRotateKey = async (keyId: string) => {
+		try {
+			const res = await fetch(`${API}/pipeline/api-keys/rotate`, {
+				method: "POST",
+				credentials: "include",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ keyId }),
+			});
+			if (res.ok) {
+				const data: { key: string; id: string } = await res.json();
+				setRotatedKey(data.key);
+				// Refresh key list
+				const keysRes = await fetch(`${API}/pipeline/api-keys`, {
+					credentials: "include",
+				});
+				if (keysRes.ok) {
+					setApiKeys(await keysRes.json());
+				}
+			}
+		} catch {
+			// silently ignore
+		}
+	};
+
+	const STAGES = ["new", "scored", "enriched", "pitched", "replied"];
 
 	return (
 		<div className="mx-auto max-w-6xl space-y-6 p-6">
@@ -157,6 +283,225 @@ function RouteComponent() {
 					</CardContent>
 				</Card>
 			)}
+
+			{/* ── Stats Bar ── */}
+			<div>
+				<h2 className="mb-3 font-medium text-muted-foreground text-sm">
+					Lead Pipeline
+				</h2>
+				<div className="grid grid-cols-5 gap-4">
+					{pipelineStats ? (
+						<>
+							<Card>
+								<CardContent className="p-4 text-center">
+									<p className="font-bold text-2xl">
+										{pipelineStats.totalLeads}
+									</p>
+									<p className="text-muted-foreground text-xs">Total Leads</p>
+								</CardContent>
+							</Card>
+							<Card>
+								<CardContent className="p-4 text-center">
+									<p className="font-bold text-2xl">
+										{pipelineStats.scoredToday}
+									</p>
+									<p className="text-muted-foreground text-xs">Scored Today</p>
+								</CardContent>
+							</Card>
+							<Card>
+								<CardContent className="p-4 text-center">
+									<p className="font-bold text-2xl">
+										{pipelineStats.emailsSent}
+									</p>
+									<p className="text-muted-foreground text-xs">Emails Sent</p>
+								</CardContent>
+							</Card>
+							<Card>
+								<CardContent className="p-4 text-center">
+									<p className="font-bold text-2xl">
+										{pipelineStats.replyRate}%
+									</p>
+									<p className="text-muted-foreground text-xs">Reply Rate</p>
+								</CardContent>
+							</Card>
+							<Card>
+								<CardContent className="p-4 text-center">
+									<p className="font-bold text-2xl">
+										€{pipelineStats.pipelineValue}
+									</p>
+									<p className="text-muted-foreground text-xs">
+										Pipeline Value
+									</p>
+								</CardContent>
+							</Card>
+						</>
+					) : (
+						Array.from({ length: 5 }).map((_, i) => (
+							<Card key={i}>
+								<CardContent className="p-4">
+									<Skeleton className="mb-2 h-8 w-16" />
+									<Skeleton className="h-3 w-20" />
+								</CardContent>
+							</Card>
+						))
+					)}
+				</div>
+			</div>
+
+			{/* ── Pipeline Kanban ── */}
+			<div>
+				<div className="mb-3 flex items-center justify-between">
+					<h2 className="font-medium text-muted-foreground text-sm">
+						Pipeline Stages
+					</h2>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={() => window.open(`${API}/pipeline/csv`, "_blank")}
+					>
+						Download CSV
+					</Button>
+				</div>
+				<div className="grid grid-cols-5 gap-3">
+					{pipelineStages
+						? STAGES.map((stage) => {
+								const stageData = pipelineStages.stages[stage] ?? {
+									count: 0,
+									leads: [],
+								};
+								return (
+									<Card key={stage} className="flex flex-col">
+										<CardHeader className="flex-row items-center justify-between space-y-0 px-3 pt-3 pb-2">
+											<CardTitle className="font-medium text-sm capitalize">
+												{STAGE_LABELS[stage] ?? stage}
+											</CardTitle>
+											<Badge variant="outline" className="text-xs">
+												{stageData.count}
+											</Badge>
+										</CardHeader>
+										<CardContent className="flex-1 space-y-1.5 px-3 pb-3">
+											{stageData.leads.length === 0 ? (
+												<p className="text-muted-foreground text-xs">
+													No leads
+												</p>
+											) : (
+												stageData.leads.map((lead) => (
+													<div
+														key={lead.id}
+														className="flex items-center justify-between rounded border border-border/50 px-2 py-1 text-xs"
+													>
+														<span className="max-w-[70px] truncate font-mono text-[10px]">
+															{lead.leadId.slice(0, 12)}
+														</span>
+														{lead.score !== null && (
+															<Badge
+																variant="outline"
+																className={`shrink-0 px-1 py-0 text-[9px] ${scoreBadgeClass(lead.score)}`}
+															>
+																{lead.score}
+															</Badge>
+														)}
+													</div>
+												))
+											)}
+										</CardContent>
+									</Card>
+								);
+							})
+						: Array.from({ length: 5 }).map((_, i) => (
+								<Card key={i}>
+									<CardContent className="space-y-2 p-3">
+										<Skeleton className="h-4 w-16" />
+										<Skeleton className="h-3 w-full" />
+										<Skeleton className="h-3 w-full" />
+										<Skeleton className="h-3 w-3/4" />
+									</CardContent>
+								</Card>
+							))}
+				</div>
+			</div>
+
+			{/* ── API Key Management ── */}
+			<div>
+				<h2 className="mb-3 font-medium text-muted-foreground text-sm">
+					API Access
+				</h2>
+				<Card>
+					<CardHeader className="pb-3">
+						<CardTitle className="font-semibold text-sm">API Keys</CardTitle>
+					</CardHeader>
+					<CardContent>
+						{apiKeys.length === 0 ? (
+							<p className="text-muted-foreground text-sm">
+								No API keys found. Complete onboarding to generate your API key.
+							</p>
+						) : (
+							<div className="space-y-3">
+								{apiKeys.map((k) => (
+									<div
+										key={k.id}
+										className="flex items-center justify-between rounded border border-border/50 p-3"
+									>
+										<div className="space-y-0.5">
+											<p className="font-medium text-sm">{k.name}</p>
+											<p className="font-mono text-muted-foreground text-xs">
+												{k.maskedKey}
+											</p>
+											<p className="text-[10px] text-muted-foreground">
+												Last used:{" "}
+												{k.lastUsed
+													? new Date(k.lastUsed).toLocaleDateString()
+													: "Never"}
+											</p>
+										</div>
+										<Button
+											variant="outline"
+											size="sm"
+											onClick={() => handleRotateKey(k.id)}
+										>
+											Rotate
+										</Button>
+									</div>
+								))}
+							</div>
+						)}
+					</CardContent>
+				</Card>
+			</div>
+
+			{/* Dialog: show rotated key once */}
+			<Dialog
+				open={rotatedKey !== null}
+				onOpenChange={(open) => {
+					if (!open) setRotatedKey(null);
+				}}
+			>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>New API Key Generated</DialogTitle>
+					</DialogHeader>
+					<div className="space-y-4">
+						<div className="rounded border border-yellow-500/30 bg-yellow-500/10 p-3">
+							<p className="font-medium text-sm text-yellow-400">
+								Save this key now — it will not be shown again
+							</p>
+						</div>
+						<div className="rounded bg-muted p-3">
+							<p className="break-all font-mono text-sm">{rotatedKey}</p>
+						</div>
+						<Button
+							className="w-full"
+							onClick={() => {
+								if (rotatedKey) {
+									navigator.clipboard.writeText(rotatedKey);
+								}
+							}}
+						>
+							Copy to Clipboard
+						</Button>
+					</div>
+				</DialogContent>
+			</Dialog>
 
 			{/* Service Status */}
 			<div>
