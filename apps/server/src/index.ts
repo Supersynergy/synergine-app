@@ -12,6 +12,7 @@ import { approvalsRouter } from "@/routes/approvals";
 import { billing } from "@/routes/billing";
 import { newsRouter } from "@/routes/news";
 import { onboarding } from "@/routes/onboarding";
+import { pipelineRouter } from "@/routes/pipeline";
 import { searchRouter } from "@/routes/search";
 import { logActivity, system } from "@/routes/system";
 
@@ -66,6 +67,7 @@ api.route("/search", searchRouter);
 api.route("/system", system);
 api.route("/onboarding", onboarding);
 api.route("/billing", billing);
+api.route("/pipeline", pipelineRouter);
 
 // --- OpenAPI docs (lightweight HTML redirect to Scalar) ---
 app.get("/api/docs", (c) =>
