@@ -1,3 +1,23 @@
+<!-- REPO-POLISH-AGENTS:START -->
+# AGENTS.md
+
+Synergine App is a TypeScript app/toolkit for practical developer workflows.
+
+## Commands
+
+- `dev`: `bun run dev`
+- `build`: `bun run build`
+- `setup`: `bun install`
+
+## Repo Rules
+
+- Optimize for Time-to-First-Success: keep setup and verification commands obvious.
+- Keep changes scoped to the domain being edited; avoid catch-all `utils`, `helpers`, and `misc` buckets.
+- Preserve existing user changes in this repository. Do not run destructive git commands.
+- Add or update tests when behavior changes.
+- Put durable architecture rationale in `docs/adr/`.
+<!-- REPO-POLISH-AGENTS:END -->
+
 # AGENTS.md — Synergine App
 
 ## Build & Run
@@ -50,3 +70,24 @@
 - Use packages/env for type-safe env validation
 - Sanitize all user input via Zod schemas
 - API auth via Better Auth middleware
+
+<!-- LEVERAGE-LENS v1 -->
+## 🎯 Leverage Lens (PRIO — apply to ALL actions: code, biz, strategy, refactor)
+
+**Grundsatz**: Erfolg = max **asymmetric upside** / min downside / min **friction** / max **compounding**. Bei jedem nicht-trivialen Task **min 2 Hebel benennen + Aktion danach ausrichten**. Kein Hebel → "warum überhaupt machen?" (via negativa).
+
+**Konflikt-Prio**: `compounding > one-shot` · `moat > feature` · `distribution > product` · `zero-friction > clever` · `default-alive > growth`.
+
+**Top-Hebel je Context (dynamisch ziehen)**:
+- **Code/Refactor** → zero friction · one-click · force multiplier · compounding · optionality · antifragile · 10x lever · default-alive · evergreen · ship-this-week · automation moat · AI leverage · zero-config · async-first
+- **Biz/Strategie** → moat · wedge · beachhead · zero-to-one · category-of-one · distribution-first · unfair advantage · picks-and-shovels · mispriced risk · network effect · power law · flywheel · trojan horse · permissionless
+- **Pricing/Offer** → 10x cheaper · 10x better · no-brainer offer · value-based pricing · land-and-expand · negative churn · willingness-to-pay · price anchor · scarcity · urgency · social proof
+- **Pitch/Copy** → aha-moment · time-to-wow · loss aversion · FOMO · status game · identity hook · magic moment · reciprocity · dopamine loop
+- **Personal/Exec** → high-agency · bias-to-action · deep work · compounding habit · luck surface area · OODA · via negativa · extreme ownership · ramen profitable · cockroach mode
+- **Distribution/Growth** → built-in distribution · PLG · K-factor · viral coefficient · referral loop · SEO compounding · programmatic SEO · UGC engine · embed-everywhere · bottoms-up adoption
+- **Defensive** → switching cost · lock-in · data moat · brand moat · economies of scale · proprietary distribution · supply-side advantage · network effect
+
+**Volle 220-Wort-Liste** + Anwendungs-Templates: lazy-load `~/.claude/CLAUDE-leverage.md`.
+
+**Anti-Pattern (kill on sight)**: feature-without-moat · clever-without-distribution · one-shot-without-compounding · friction-by-default · 10%-improvement (statt 10x) · symmetric-bet · perfectionism-before-ship.
+<!-- /LEVERAGE-LENS -->
