@@ -4,17 +4,17 @@ This project was created with [Better-T-Stack](https://github.com/AmanVarshney01
 
 ## Features
 
-- **TypeScript** - For type safety and improved developer experience
-- **TanStack Router** - File-based routing with full type safety
-- **TailwindCSS** - Utility-first CSS for rapid UI development
-- **Shared UI package** - shadcn/ui primitives live in `packages/ui`
-- **Hono** - Lightweight, performant server framework
-- **Bun** - Runtime environment
-- **Drizzle** - TypeScript-first ORM
-- **SQLite/Turso** - Database engine
-- **Authentication** - Better-Auth
-- **Turborepo** - Optimized monorepo build system
-- **Biome** - Linting and formatting
+- TypeScript - For type safety and improved developer experience
+- TanStack Router - File-based routing with full type safety
+- TailwindCSS - Utility-first CSS for rapid UI development
+- Shared UI package - shadcn/ui primitives live in `packages/ui`
+- Hono - Lightweight, performant server framework
+- Bun - Runtime environment
+- Drizzle - TypeScript-first ORM
+- SQLite/Turso - Database engine
+- Authentication - Better-Auth
+- Turborepo - Optimized monorepo build system
+- Biome - Linting and formatting
 
 ## Getting Started
 
