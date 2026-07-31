@@ -1,6 +1,11 @@
 # synergine-app
 
-This project was created with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack), a modern TypeScript stack that combines React, TanStack Router, Hono, and more.
+An app for running AI agent infrastructure: web interface, API, sign-in and payments
+in one TypeScript repository, so you are not wiring five services together before you
+can start.
+
+Scaffolded with [Better-T-Stack](https://github.com/AmanVarshney01/create-better-t-stack).
+The pieces it brought along:
 
 ## Features
 
