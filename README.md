@@ -1,5 +1,9 @@
 # synergine-app
 
+![Connected components of an AI application stack](docs/assets/cover.png)
+
+[Features](#features) · [Getting started](#getting-started) · [Database setup](#database-setup) · [Project structure](#project-structure) · [Scripts](#available-scripts)
+
 An app for running AI agent infrastructure: web interface, API, sign-in and payments
 in one TypeScript repository, so you are not wiring five services together before you
 can start.
