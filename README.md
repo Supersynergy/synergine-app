@@ -1,6 +1,6 @@
 # synergine-app
 
-![Connected components of an AI application stack](docs/assets/cover.png)
+![Synergine App](docs/assets/cover.png)
 
 [Features](#features) · [Getting started](#getting-started) · [Database setup](#database-setup) · [Project structure](#project-structure) · [Scripts](#available-scripts)
 
