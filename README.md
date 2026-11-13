@@ -1,6 +1,9 @@
+<p align="center">
+  <img src="docs/assets/cover.png" alt="Synergine App" width="960">
+</p>
+
 # synergine-app
 
-![Synergine App](docs/assets/cover.png)
 
 [Features](#features) · [Getting started](#getting-started) · [Database setup](#database-setup) · [Project structure](#project-structure) · [Scripts](#available-scripts)
 
